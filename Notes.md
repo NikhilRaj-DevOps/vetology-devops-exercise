@@ -45,7 +45,7 @@ curl localhost:8081
 task clean
 ```
 
-For a service-token workflow:
+For a service-token workflow, create a Doppler service token for the `webtext-app` / `dev` configuration and export it only in the current shell:
 
 ```sh
 export DOPPLER_TOKEN='YOUR_DOPPLER_SERVICE_TOKEN'
@@ -110,10 +110,9 @@ terraform output public_ip
 ```sh
 brew install ansible
 cd /Users/nikhil/nik-ws/vetology-devops-exercise/ansible
-cp inventory.example.yml inventory.yml
 ```
 
-Edit `inventory.yml`:
+Create or edit `inventory.yml` with the Terraform public IP:
 
 ```yaml
 ansible_host: YOUR_EC2_PUBLIC_IP
@@ -131,15 +130,11 @@ ansible-playbook site.yml
 
 ```sh
 ssh -i ~/.ssh/webtext-app-ec2 ubuntu@YOUR_EC2_PUBLIC_IP
-echo "$GHTOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin
-docker pull ghcr.io/nikhilraj-devops/webtext-app:latest
+export DOPPLER_TOKEN='YOUR_DOPPLER_SERVICE_TOKEN'
+doppler setup --project webtext-app --config dev
+doppler run -- sh -c 'printf "%s" "$GHTOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin && docker pull ghcr.io/nikhilraj-devops/webtext-app:latest'
 docker rm -f webtext-app 2>/dev/null || true
-docker run -d \
-	--name webtext-app \
-	--restart unless-stopped \
-	-p 8081:80 \
-	-e WEBTEXT='Development deploy' \
-	ghcr.io/nikhilraj-devops/webtext-app:latest
+doppler run -- sh -c 'docker run -d --name webtext-app --restart unless-stopped -p 8081:80 -e WEBTEXT="$WEBTEXT" ghcr.io/nikhilraj-devops/webtext-app:latest'
 curl localhost:8081
 ```
 
