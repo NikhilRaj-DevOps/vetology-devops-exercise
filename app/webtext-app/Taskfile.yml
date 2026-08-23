@@ -20,11 +20,12 @@ tasks:
       - docker build -t {{.IMAGE_NAME}} -t {{.GHCR_IMAGE}} .
 
   publish:
-    desc: Push the image to GitHub Container Registry
+    desc: Push the image to GHCR using Doppler GHTOKEN
     deps:
       - build
     cmds:
-      - docker push {{.GHCR_IMAGE}}
+      - |
+        doppler run -- sh -c 'test -n "${GHTOKEN:-}" || { echo "GHTOKEN is required in Doppler" >&2; exit 1; }; printf "%s" "$GHTOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin && docker push {{.GHCR_IMAGE}}'
 
   lint:
     desc: Lint the Dockerfile with Hadolint

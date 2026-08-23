@@ -54,12 +54,11 @@ task deploywithdoppler
 
 ## Push the image to GitHub Container Registry
 
-Log in with a GitHub personal access token that has `write:packages` permission:
+Store a GitHub personal access token with `write:packages` permission in Doppler as `GHTOKEN`:
 
 ```sh
 cd /Users/nikhil/nik-ws/vetology-devops-exercise/app/webtext-app
-echo "$GITHUB_TOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin
-task build
+doppler secrets set GHTOKEN='YOUR_GITHUB_PAT'
 task publish
 ```
 
@@ -132,7 +131,7 @@ ansible-playbook site.yml
 
 ```sh
 ssh -i ~/.ssh/webtext-app-ec2 ubuntu@YOUR_EC2_PUBLIC_IP
-echo "$GITHUB_TOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin
+echo "$GHTOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin
 docker pull ghcr.io/nikhilraj-devops/webtext-app:latest
 docker rm -f webtext-app 2>/dev/null || true
 docker run -d \
