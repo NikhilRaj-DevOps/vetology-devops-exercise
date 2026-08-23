@@ -4,6 +4,7 @@ version: '3'
 
 vars:
   IMAGE_NAME: webtext-app:latest
+  GHCR_IMAGE: ghcr.io/nikhilraj-devops/webtext-app:latest
   CONTAINER_NAME: webtext-app
   HOST_PORT: '8081'
 
@@ -16,7 +17,14 @@ tasks:
   build:
     desc: Build the webtext-app image
     cmds:
-      - docker build -t {{.IMAGE_NAME}} .
+      - docker build -t {{.IMAGE_NAME}} -t {{.GHCR_IMAGE}} .
+
+  publish:
+    desc: Push the image to GitHub Container Registry
+    deps:
+      - build
+    cmds:
+      - docker push {{.GHCR_IMAGE}}
 
   lint:
     desc: Lint the Dockerfile with Hadolint

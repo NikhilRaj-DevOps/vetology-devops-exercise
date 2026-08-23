@@ -52,15 +52,15 @@ export DOPPLER_TOKEN='YOUR_DOPPLER_SERVICE_TOKEN'
 task deploywithdoppler
 ```
 
-## Push the image to Docker Hub
+## Push the image to GitHub Container Registry
 
-Replace `YOUR_DOCKERHUB_USERNAME` with your registry username:
+Log in with a GitHub personal access token that has `write:packages` permission:
 
 ```sh
 cd /Users/nikhil/nik-ws/vetology-devops-exercise/app/webtext-app
-docker login
-docker build -t YOUR_DOCKERHUB_USERNAME/webtext-app:latest .
-docker push YOUR_DOCKERHUB_USERNAME/webtext-app:latest
+echo "$GITHUB_TOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin
+task build
+task publish
 ```
 
 ## Authenticate AWS
@@ -128,19 +128,19 @@ Run the configuration:
 ansible-playbook site.yml
 ```
 
-## Run the published image on the VM
+## Run the published GHCR image on the VM
 
 ```sh
 ssh -i ~/.ssh/webtext-app-ec2 ubuntu@YOUR_EC2_PUBLIC_IP
-docker login
-docker pull YOUR_DOCKERHUB_USERNAME/webtext-app:latest
+echo "$GITHUB_TOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin
+docker pull ghcr.io/nikhilraj-devops/webtext-app:latest
 docker rm -f webtext-app 2>/dev/null || true
 docker run -d \
 	--name webtext-app \
 	--restart unless-stopped \
 	-p 8081:80 \
 	-e WEBTEXT='Development deploy' \
-	YOUR_DOCKERHUB_USERNAME/webtext-app:latest
+	ghcr.io/nikhilraj-devops/webtext-app:latest
 curl localhost:8081
 ```
 
