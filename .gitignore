@@ -1,0 +1,13 @@
+# Terraform generated files and local values
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Local Ansible inventory
+ansible/inventory.yml
+
+# Local secrets and SSH material
+.env
+*.pem
+*.key

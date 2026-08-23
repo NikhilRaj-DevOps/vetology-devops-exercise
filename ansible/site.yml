@@ -1,0 +1,80 @@
+---
+- name: Configure webtext-app VM
+  hosts: webtext_vms
+  become: true
+  gather_facts: true
+
+  vars:
+    task_version: "3.45.4"
+
+  tasks:
+    - name: Install Docker prerequisites
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+        update_cache: true
+
+    - name: Install Docker Engine
+      ansible.builtin.apt:
+        name:
+          - docker.io
+        state: present
+
+    - name: Enable and start Docker
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Add remote user to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    - name: Download Task installer
+      ansible.builtin.get_url:
+        url: https://taskfile.dev/install.sh
+        dest: /tmp/task-install.sh
+        mode: "0755"
+
+    - name: Install Task
+      ansible.builtin.command:
+        cmd: "/tmp/task-install.sh -d -b /usr/local/bin v{{ task_version }}"
+        creates: /usr/local/bin/task
+
+    - name: Download Doppler installer
+      ansible.builtin.get_url:
+        url: https://cli.doppler.com/install.sh
+        dest: /tmp/doppler-install.sh
+        mode: "0755"
+
+    - name: Install Doppler CLI
+      ansible.builtin.command:
+        cmd: /tmp/doppler-install.sh
+        creates: /usr/local/bin/doppler
+
+    - name: Verify Docker installation
+      ansible.builtin.command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Verify Task installation
+      ansible.builtin.command: task --version
+      register: task_version_output
+      changed_when: false
+
+    - name: Verify Doppler installation
+      ansible.builtin.command: doppler --version
+      register: doppler_version_output
+      changed_when: false
+
+    - name: Display installed tool versions
+      ansible.builtin.debug:
+        msg:
+          - "{{ docker_version.stdout }}"
+          - "{{ task_version_output.stdout }}"
+          - "{{ doppler_version_output.stdout }}"

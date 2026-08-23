@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  IMAGE_NAME: webtext-app:latest
+  CONTAINER_NAME: webtext-app
+  HOST_PORT: '8081'
+
+tasks:
+  default:
+    desc: Build, lint, deploy, and test the application
+    cmds:
+      - task: cicd
+
+  build:
+    desc: Build the webtext-app image
+    cmds:
+      - docker build -t {{.IMAGE_NAME}} .
+
+  lint:
+    desc: Lint the Dockerfile with Hadolint
+    cmds:
+      - docker run --rm -i hadolint/hadolint < Dockerfile
+
+  deploy:
+    desc: Run webtext-app locally on port 8081
+    deps:
+      - build
+    cmds:
+      - docker rm -f {{.CONTAINER_NAME}} 2>/dev/null || true
+      - docker run -d --name {{.CONTAINER_NAME}} -p {{.HOST_PORT}}:80 -e WEBTEXT="Development deploy" {{.IMAGE_NAME}}
+
+  deploywithdoppler:
+    desc: Run webtext-app with WEBTEXT from Doppler
+    deps:
+      - build
+    cmds:
+      - |
+        docker rm -f {{.CONTAINER_NAME}} 2>/dev/null || true
+        doppler run -- sh -c 'docker run -d --name {{.CONTAINER_NAME}} -p {{.HOST_PORT}}:80 -e WEBTEXT="$WEBTEXT" {{.IMAGE_NAME}}'
+
+  test:
+    desc: Verify the deployed response
+    deps:
+      - deploy
+    cmds:
+      - |
+        response=""
+        for attempt in 1 2 3 4 5; do
+          response="$(curl -fsS localhost:{{.HOST_PORT}} 2>/dev/null)" && break
+          sleep 1
+        done
+        test "$response" = "Development deploy"
+
+  clean:
+    desc: Stop and remove the webtext-app container
+    cmds:
+      - docker rm -f {{.CONTAINER_NAME}} 2>/dev/null || true
+
+  cicd:
+    desc: Build, lint, deploy, and test the application
+    deps:
+      - lint
+      - test
