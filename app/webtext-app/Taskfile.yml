@@ -34,6 +34,8 @@ tasks:
 
   deploywithdoppler:
     desc: Run webtext-app with WEBTEXT from Doppler
+    deps:
+      - build
     cmds:
       - |
         test -n "${DOPPLER_TOKEN:-}" || { echo "DOPPLER_TOKEN is required; export a Doppler service token before running this task" >&2; exit 1; }
