@@ -70,10 +70,16 @@
         dest: /tmp/doppler-install.sh
         mode: "0755"
 
+    - name: Check whether Doppler CLI is installed
+      ansible.builtin.command: which doppler
+      register: doppler_installed
+      changed_when: false
+      failed_when: false
+
     - name: Install Doppler CLI
       ansible.builtin.command:
         cmd: /tmp/doppler-install.sh
-        creates: /usr/local/bin/doppler
+      when: doppler_installed.rc != 0
 
     - name: Verify Docker installation
       ansible.builtin.command: docker --version
