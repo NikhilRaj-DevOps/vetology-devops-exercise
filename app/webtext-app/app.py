@@ -17,4 +17,4 @@ class WebTextHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    HTTPServer(("0.0.0.0", 80), WebTextHandler).serve_forever()
+    HTTPServer(("0.0.0.0", 8080), WebTextHandler).serve_forever()

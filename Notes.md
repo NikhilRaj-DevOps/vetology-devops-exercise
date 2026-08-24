@@ -52,23 +52,12 @@ export DOPPLER_TOKEN='YOUR_DOPPLER_SERVICE_TOKEN'
 task deploywithdoppler
 ```
 
-## Push the image to GitHub Container Registry
-
-Store a GitHub personal access token with `write:packages` permission in Doppler as `GHTOKEN`:
-
-```sh
-cd /Users/nikhil/nik-ws/vetology-devops-exercise/app/webtext-app
-doppler secrets set GHTOKEN='YOUR_GITHUB_PAT'
-task publish
-```
-
 ## Authenticate AWS
 
-AWS CLI login credentials are temporary. Export them in the same shell where Terraform runs:
+Configure AWS CLI credentials before running Terraform:
 
 ```sh
-aws login
-eval "$(aws configure export-credentials --profile default --format env)"
+aws configure
 aws sts get-caller-identity
 ```
 
@@ -126,15 +115,13 @@ Run the configuration:
 ansible-playbook site.yml
 ```
 
-## Run the published GHCR image on the VM
+## Build, deploy, and test on the VM
 
 ```sh
 ssh -i ~/.ssh/webtext-app-ec2 ubuntu@YOUR_EC2_PUBLIC_IP
-export DOPPLER_TOKEN='YOUR_DOPPLER_SERVICE_TOKEN'
+cd /opt/vetology-devops-exercise/app/webtext-app
 doppler setup --project webtext-app --config dev
-doppler run -- sh -c 'printf "%s" "$GHTOKEN" | docker login ghcr.io -u NikhilRaj-DevOps --password-stdin && docker pull ghcr.io/nikhilraj-devops/webtext-app:latest'
-docker rm -f webtext-app 2>/dev/null || true
-doppler run -- sh -c 'docker run -d --name webtext-app --restart unless-stopped -p 8081:80 -e WEBTEXT="$WEBTEXT" ghcr.io/nikhilraj-devops/webtext-app:latest'
+task cicd
 curl localhost:8081
 ```
 
@@ -142,6 +129,5 @@ curl localhost:8081
 
 ```sh
 cd /Users/nikhil/nik-ws/vetology-devops-exercise/terraform
-eval "$(aws configure export-credentials --profile default --format env)"
 terraform destroy
 ```

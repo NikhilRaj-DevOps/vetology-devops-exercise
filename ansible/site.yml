@@ -6,6 +6,8 @@
 
   vars:
     task_version: "3.45.4"
+    app_repo: "https://github.com/NikhilRaj-DevOps/vetology-devops-exercise.git"
+    app_path: "/opt/vetology-devops-exercise"
 
   tasks:
     - name: Install Docker prerequisites
@@ -13,7 +15,7 @@
         name:
           - ca-certificates
           - curl
-          - gnupg
+          - git
         state: present
         update_cache: true
 
@@ -34,6 +36,22 @@
         name: "{{ ansible_user }}"
         groups: docker
         append: true
+
+    - name: Create application directory
+      ansible.builtin.file:
+        path: "{{ app_path }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Check out the application repository
+      become: false
+      ansible.builtin.git:
+        repo: "{{ app_repo }}"
+        dest: "{{ app_path }}"
+        version: main
+        update: true
 
     - name: Download Task installer
       ansible.builtin.get_url:
@@ -60,6 +78,11 @@
     - name: Verify Docker installation
       ansible.builtin.command: docker --version
       register: docker_version
+      changed_when: false
+
+    - name: Verify application source checkout
+      become: false
+      ansible.builtin.command: git -C "{{ app_path }}" status --short --branch
       changed_when: false
 
     - name: Verify Task installation
