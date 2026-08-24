@@ -54,10 +54,12 @@ task deploywithdoppler
 
 ## Authenticate AWS
 
-Configure AWS CLI credentials before running Terraform:
+Use a dedicated profile and clear expired temporary environment variables before running Terraform:
 
 ```sh
-aws configure
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_CREDENTIAL_EXPIRATION AWS_PROFILE
+aws login --profile terraform --region us-east-1
+eval "$(aws configure export-credentials --profile terraform --format env)"
 aws sts get-caller-identity
 ```
 
@@ -131,5 +133,7 @@ The service token must be scoped to the `webtext-app` project and `dev` configur
 
 ```sh
 cd /Users/nikhil/nik-ws/vetology-devops-exercise/terraform
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_CREDENTIAL_EXPIRATION AWS_PROFILE
+eval "$(aws configure export-credentials --profile terraform --format env)"
 terraform destroy
 ```
