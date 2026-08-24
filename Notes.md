@@ -125,6 +125,8 @@ task cicd
 curl localhost:8081
 ```
 
+The service token must be scoped to the `webtext-app` project and `dev` configuration. The task passes those values explicitly, so no local Doppler project file is required on the VM.
+
 ## Destroy AWS resources
 
 ```sh
