@@ -34,12 +34,9 @@ tasks:
     desc: Run webtext-app with WEBTEXT from Doppler
     cmds:
       - |
+        test -n "${DOPPLER_TOKEN:-}" || { echo "DOPPLER_TOKEN is required; export a Doppler service token before running this task" >&2; exit 1; }
         docker rm -f {{.CONTAINER_NAME}} 2>/dev/null || true
-        if [ -n "${DOPPLER_TOKEN:-}" ]; then
-          doppler run --token "$DOPPLER_TOKEN" -- sh -c 'docker run -d --name {{.CONTAINER_NAME}} -p {{.HOST_PORT}}:{{.CONTAINER_PORT}} -e WEBTEXT="$WEBTEXT" {{.IMAGE_NAME}}'
-        else
-          doppler run -- sh -c 'docker run -d --name {{.CONTAINER_NAME}} -p {{.HOST_PORT}}:{{.CONTAINER_PORT}} -e WEBTEXT="$WEBTEXT" {{.IMAGE_NAME}}'
-        fi
+        doppler run --token "$DOPPLER_TOKEN" -- sh -c 'docker run -d --name {{.CONTAINER_NAME}} -p {{.HOST_PORT}}:{{.CONTAINER_PORT}} -e WEBTEXT="$WEBTEXT" {{.IMAGE_NAME}}'
 
   test:
     desc: Verify the deployed response

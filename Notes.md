@@ -119,8 +119,8 @@ ansible-playbook site.yml
 
 ```sh
 ssh -i ~/.ssh/webtext-app-ec2 ubuntu@YOUR_EC2_PUBLIC_IP
+export DOPPLER_TOKEN='YOUR_DOPPLER_SERVICE_TOKEN'
 cd /opt/vetology-devops-exercise/app/webtext-app
-doppler setup --project webtext-app --config dev
 task cicd
 curl localhost:8081
 ```
